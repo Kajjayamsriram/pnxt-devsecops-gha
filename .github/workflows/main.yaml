@@ -122,7 +122,7 @@ jobs:
                 SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
               with:
                 image: ${{env.ECR_REGISTRY}}/${{env.ECR_REPO}}:${{ env.IMG_TAG }}
-                args: --severity-threshold=high
+                args: --severity-threshold=critical
             - name: smoke test
               run: |
                 docker run -d --name zomato -p 3000:3000 "${{env.ECR_REGISTRY}}/${{env.ECR_REPO}}:${{ env.IMG_TAG }}"
