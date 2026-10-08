@@ -1,0 +1,26 @@
+SIMPLE FLOW:
+   │
+   ├── Checkout
+   ├── Trivy FS
+   │      └── HIGH/CRITICAL → FAIL
+   │
+   ├── npm ci
+   ├── npm test
+   ├── SonarQube
+   │      └── Quality Gate → FAIL/PASS
+   │
+   ├── Hadolint
+   │      └── warning/error → FAIL
+   │
+   ├── Buildx
+   │      ├── cache-from: GHA
+   │      ├── build
+   │      ├── cache-to: GHA
+   │      └── load: true
+   │
+   ├── Snyk Container
+   │      └── HIGH/CRITICAL → FAIL
+   │
+   ├── Smoke test
+   │
+   └── STOP

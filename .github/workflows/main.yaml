@@ -1,0 +1,150 @@
+name: devsecops_zomato_pipeline
+#SCA ->dependabot
+###############
+#Triggers
+###############
+on: 
+    push:
+        branches:
+            - main
+            - develop
+            - preprod
+    pull_request:
+        types: [opened, synchronize, ready_for_review]
+        branches:
+            - main
+
+    workflow_dispatch:
+        inputs:
+            run_tests:
+                description: "To avoid running test cases toggle it!"
+                default: true
+                required: false
+                type: boolean
+                
+
+###################
+#Avoid parallel wf
+###################
+concurrency:
+    group: ${{ github.workflow }}-${github.ref}
+    cancel-in-progress: false
+
+jobs:
+    build-job:
+        runs-on: ubuntu-slim
+        env:
+            REGION: us-east-1
+            ECR_REPO: zomato-gha
+            ECR_REGISTRY: ${{secrets.ACC_ID}}.dkr.ecr.us-east-1.amazonaws.com
+        ##########################
+        #Permissions for the wf
+        ##########################
+        permissions:
+            security-events: write
+            actions: read
+            contents: read
+            id-token: write
+        
+        defaults:
+            run:
+                shell: bash
+        steps:
+            - name: code-checkout
+              uses: actions/checkout@v7
+              with:
+                fetch-depth: 0 #Deeper analysis by sonarqube to track changes over time using commit history
+            - name: Trivy FS scan
+              uses: aquasecurity/trivy-action@v0.36.0
+              with:
+                scan-type: fs
+                scan-ref: .
+                format: sarif
+                output: trivy-results.sarif
+                severity: HIGH,CRITICAL
+                exit-code: '1'
+            - name: Upload Trivy results
+              if: always()
+              uses: github/codeql-action/upload-sarif@v3
+              with:
+                sarif_file: trivy-results.sarif
+            - name: setup Node
+              uses: actions/setup-node@v7
+              with:
+                node-version: 22
+            - name: install dependencies
+              run: npm ci
+            - name: Run tests
+              if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_tests == true }}
+              run: npm run test -- --watchAll=false --passWithNoTests
+            - name: Cache SonarQube packages
+              uses: actions/cache@v4.3.0
+              with:
+                path: ~/.sonar/cache
+                key: ${{ runner.os }}-sonar
+                restore-keys: ${{ runner.os }}-sonar
+
+            - name: SonarQube Scan &Qality gates
+              uses: sonarsource/sonarqube-scan-action@v8.1.0
+              with:
+                args: >
+                  -Dsonar.qualitygate.wait=true
+                  -Dsonar.qualitygate.timeout=300
+              env:
+                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                #SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }} #optional if using sonarcloud
+            
+            - name: Dockerfile linting
+              uses: hadolint/hadolint-action@v3.1.0
+              with:
+                dockerfile: Dockerfile
+                failure-threshold: warning
+            - name: generate tag
+              run: echo "IMG_TAG=$(git rev-parse --short=6 HEAD)" >> $GITHUB_ENV
+            - name: setup buildx
+              uses: docker/setup-buildx-action@v3
+            - name: build image
+              uses: docker/build-push-action@v6
+              with:
+                context: .
+                file: Dockerfile
+                push: false
+                load: true
+                tags: |
+                    ${{env.ECR_REGISTRY}}/${{env.ECR_REPO}}:${{ env.IMG_TAG }}
+                    ${{env.ECR_REGISTRY}}/${{env.ECR_REPO}}:latest
+                cache-from: type=gha
+                cache-to: type=gha,mode=max
+            - name: Image scan
+              uses: snyk/actions/docker@master
+              env:
+                SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+              with:
+                image: ${{env.ECR_REGISTRY}}/${{env.ECR_REPO}}:${{ env.IMG_TAG }}
+                args: --severity-threshold=high
+            - name: smoke test
+              run: |
+                docker run -d --name zomato -p 3000:3000 "${{env.ECR_REGISTRY}}/${{env.ECR_REPO}}:${{ env.IMG_TAG }}"
+                sleep 5
+                curl --fail --retry 5 --retry-delay 2 --retry-connrefused http://localhost:3000
+            
+            #Enforcing OIDC for better security
+            - name: configure AWS creds
+              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+              uses: aws-actions/configure-aws-credentials@v6.3.0
+              with:
+                audience: sts.amazonaws.com
+                aws-region: ${{env.REGION}}
+                role-to-assume: arn:aws:iam::${{secrets.ACC_ID}}:role/gha-push-image
+            - name: login to ECR
+              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+              uses: aws-actions/amazon-ecr-login@v2
+            - name: push ecr
+              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+              run: |
+                docker push ${{env.ECR_REGISTRY}}/${{env.ECR_REPO}}:${{ env.IMG_TAG }}
+                docker push ${{env.ECR_REGISTRY}}/${{env.ECR_REPO}}:latest
+            - name: cleanup
+              if: always()
+              run: |
+                 docker rm -f zomato 2>/dev/null || true
