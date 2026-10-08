@@ -1,2 +1,2 @@
 # pnxt-devsecops-gha
-completed devsecops CI pipeline using githubactions
+Complete devsecops CI pipeline using githubactions
