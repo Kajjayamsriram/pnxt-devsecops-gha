@@ -1,0 +1,2 @@
+Need to use ubuntu-latest for Production grade CI (slim doesn't have docker deamon)
+Stop sonarQube auto anlysis in project to avoid conflicts
