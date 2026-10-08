@@ -24,7 +24,7 @@
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --max-warnings=0"
   },
   "devDependencies": {
-    "eslint": "^8.0.0",
+    "eslint": "^10.12.0",
     "eslint-config-react-app": "^7.0.0",
     "eslint-plugin-react": "^7.0.0",
     "eslint-plugin-jsx-a11y": "^6.0.0",
