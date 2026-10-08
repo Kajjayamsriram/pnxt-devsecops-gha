@@ -1,2 +1,3 @@
 Need to use ubuntu-latest for Production grade CI (slim doesn't have docker deamon)
 Stop sonarQube auto anlysis in project to avoid conflicts
+Hadolint detects any missing spaces too CMD['npm'] != CMD ['npm']
