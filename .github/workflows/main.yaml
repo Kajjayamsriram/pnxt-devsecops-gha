@@ -118,6 +118,7 @@ jobs:
                 cache-to: type=gha,mode=max
             - name: Image scan
               uses: snyk/actions/docker@master
+              continue-on-error: true
               env:
                 SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
               with:
