@@ -8,7 +8,7 @@ on:
         branches:
             - main
             - develop
-            - preprod
+            - pre-prod
     pull_request:
         types: [opened, synchronize, ready_for_review]
         branches:
