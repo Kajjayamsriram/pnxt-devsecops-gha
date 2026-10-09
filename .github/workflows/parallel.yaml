@@ -39,7 +39,7 @@ jobs:
                    type=gha,scope=${{github.ref}}
                 cache-to: type=gha,mode=min,scope=${{github.ref}}
             - name: check image exists locally
-              run: docker image ls sriramk16/zomato-gha
+              run: docker image ls sriramk16/zomato-gha:latest
 
             - name: Image scan
               uses: snyk/actions/docker@master
