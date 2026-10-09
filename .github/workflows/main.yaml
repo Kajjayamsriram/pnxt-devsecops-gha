@@ -4,11 +4,11 @@ name: devsecops_zomato_pipeline
 #Triggers
 ###############
 on: 
-    # push:
-    #     branches:
-    #         - main
-    #         - develop
-    #         - pre-prod
+    push:
+        branches:
+            - main
+            - develop
+            - pre-prod
     pull_request:
         types: [opened, synchronize, ready_for_review]
         branches:
