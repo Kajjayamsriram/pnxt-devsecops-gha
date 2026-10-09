@@ -38,12 +38,9 @@ jobs:
                 cache-from: |
                    type=gha,scope=${{github.ref}}
                 cache-to: type=gha,mode=min,scope=${{github.ref}}
-            - name: upload artifact
-              uses: actions/upload-artifact@v4
-              with:
-                name: image
-                path: /tmp/image.tar
-                retention-days: 1
+            - name: check image exists locally
+              run: docker image ls sriramk16/zomato-gha
+
             - name: Image scan
               uses: snyk/actions/docker@master
               env:
@@ -51,6 +48,12 @@ jobs:
               with:
                 image: sriramk16/zomato-gha:latest
                 args: --severity-threshold=critical
+            - name: upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                name: image
+                path: /tmp/image.tar
+                retention-days: 1
     smoke-job:
         runs-on: ubuntu-latest
         needs: build-job
