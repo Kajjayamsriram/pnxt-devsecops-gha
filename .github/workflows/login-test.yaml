@@ -11,11 +11,11 @@ jobs:
             REGION: us-east-1
         steps:
             - name: aws login
-              uses: aws-actions/configure-aws-credentials@v6.3.0
+              uses: aws-actions/configure-aws-credentials@v6.2.3
               with:
                 audience: sts.amazonaws.com
                 aws-region: ${{env.REGION}}
-                role-to-assume: arn:aws:iam::${{secrets.ACC_ID}}:role/gha-push-image
+                role-to-assume: arn:aws:iam::967848863323:role/gha-push-image
             - name: list ecr-repos
               run: |
                 aws ecr describe-repositories \
