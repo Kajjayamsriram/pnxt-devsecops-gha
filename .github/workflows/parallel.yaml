@@ -47,7 +47,8 @@ jobs:
                 SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
               with:
                 image: sriramk16/zomato-gha:latest
-                args: --severity-threshold=critical
+                command: monitor #Displays in synk webpage
+                args: --project-name=${{ github.repository }}
             - name: upload artifact
               uses: actions/upload-artifact@v4
               with:
