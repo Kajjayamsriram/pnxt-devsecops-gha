@@ -6,7 +6,7 @@ name: devsecops_zomato_pipeline
 on: 
     push:
         branches:
-            - main
+            - qa
             - develop
             - pre-prod
     pull_request:
