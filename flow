@@ -1,26 +1,18 @@
-SIMPLE FLOW:
-   │
-   ├── Checkout
-   ├── Trivy FS
-   │      └── HIGH/CRITICAL → FAIL
-   │
-   ├── npm ci
-   ├── npm test
-   ├── SonarQube
-   │      └── Quality Gate → FAIL/PASS
-   │
-   ├── Hadolint
-   │      └── warning/error → FAIL
-   │
-   ├── Buildx
-   │      ├── cache-from: GHA
-   │      ├── build
-   │      ├── cache-to: GHA
-   │      └── load: true
-   │
-   ├── Snyk Container
-   │      └── HIGH/CRITICAL → FAIL
-   │
-   ├── Smoke test
-   │
-   └── STOP
+ 1. Checkout (full history)
+ 2. Hadolint            ← Dockerfile lint (fails on warning)
+ 3. Trivy FS scan       ← report only, never fails (no exit-code)
+ 4. Upload SARIF        ← to GitHub Security tab (always runs)
+ 5. Setup Node 22       ← with npm cache
+ 6. npm ci
+ 7. npm test            ← skipped if run_tests = false on manual run
+ 8. Sonar cache
+ 9. SonarQube scan      ← quality gate not enforced (wait=false)
+10. Generate tag        ← short 6-char commit SHA
+11. Setup buildx
+12. Build image         ← load: true, GHA layer cache
+13. Snyk image scan     ← continue-on-error, never blocks
+14. Smoke test          ← run container, curl :3000
+15. AWS OIDC login      ┐
+16. ECR login           ├ only if push to main
+17. Push to ECR         ┘
+18. Cleanup             ← always runs
