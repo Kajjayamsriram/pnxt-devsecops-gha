@@ -32,7 +32,7 @@ jobs:
                 file: Dockerfile
                 push: false
                 load: true
-                outputs: type=docker,dest=/tmp/image.tar
+                # outputs: type=docker,dest=/tmp/image.tar #For image to load
                 tags: |
                    sriramk16/zomato-gha:latest
                 cache-from: |
