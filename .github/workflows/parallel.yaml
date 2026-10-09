@@ -44,6 +44,13 @@ jobs:
                 name: image
                 path: /tmp/image.tar
                 retention-days: 1
+            - name: Image scan
+              uses: snyk/actions/docker@master
+              env:
+                SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+              with:
+                image: sriramk16/zomato-gha:latest
+                args: --severity-threshold=critical
     smoke-job:
         runs-on: ubuntu-latest
         needs: build-job
