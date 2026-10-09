@@ -31,7 +31,7 @@ jobs:
                 context: .
                 file: Dockerfile
                 push: false
-                # load: true
+                load: true
                 outputs: type=docker,dest=/tmp/image.tar
                 tags: |
                    sriramk16/zomato-gha:latest
