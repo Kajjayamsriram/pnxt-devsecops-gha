@@ -54,6 +54,11 @@ jobs:
               uses: actions/checkout@v7
               with:
                 fetch-depth: 0 #Deeper analysis by sonarqube to track changes over time using commit history
+            - name: Dockerfile linting
+              uses: hadolint/hadolint-action@v3.1.0
+              with:
+                dockerfile: Dockerfile
+                failure-threshold: warning
             - name: Trivy FS scan
               uses: aquasecurity/trivy-action@v0.36.0
               with:
@@ -72,13 +77,7 @@ jobs:
               uses: actions/setup-node@v7
               with:
                 node-version: 22
-            - name: cache react
-              uses: actions/cache@v4
-              with:
-                path: ~/.npm
-                key: ${{runner.os}}-npm-${{hashFiles('package-lock.json')}}
-                restore-keys:
-                  ${{runner.os}}-npm-
+                cache: npm
             - name: install dependencies
               run: npm ci --ignore-scripts
             - name: Run tests
@@ -88,7 +87,7 @@ jobs:
               uses: actions/cache@v4.3.0
               with:
                 path: ~/.sonar/cache
-                key: ${{ runner.os }}-sonar
+                key: ${{ runner.os }}-sonar-${{ github.run_id }}
                 restore-keys: ${{ runner.os }}-sonar
 
             - name: SonarQube Scan &Qality gates
@@ -102,11 +101,6 @@ jobs:
                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                 #SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }} #optional if using sonarcloud
             
-            - name: Dockerfile linting
-              uses: hadolint/hadolint-action@v3.1.0
-              with:
-                dockerfile: Dockerfile
-                failure-threshold: warning
             - name: generate tag
               run: echo "IMG_TAG=$(git rev-parse --short=6 HEAD)" >> $GITHUB_ENV
             - name: setup buildx
@@ -121,8 +115,10 @@ jobs:
                 tags: |
                     ${{env.ECR_REGISTRY}}/${{env.ECR_REPO}}:${{ env.IMG_TAG }}
                     ${{env.ECR_REGISTRY}}/${{env.ECR_REPO}}:latest
-                cache-from: type=gha
-                cache-to: type=gha,mode=max
+                cache-from: |
+                    type=gha,scope=${{ github.ref_name }}
+                    type=gha,scope=main
+                cache-to: type=gha,mode=max,scope=${{ github.ref_name }}
             - name: Image scan
               uses: snyk/actions/docker@master
               continue-on-error: true
@@ -139,17 +135,17 @@ jobs:
             
             #Enforcing OIDC for better security
             - name: configure AWS creds
-              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+              if: ${{github.event_name == 'push' && github.ref == 'refs/heads/main'}}
               uses: aws-actions/configure-aws-credentials@v6.3.0
               with:
                 audience: sts.amazonaws.com
                 aws-region: ${{env.REGION}}
                 role-to-assume: arn:aws:iam::${{secrets.ACC_ID}}:role/gha-push-image
             - name: login to ECR
-              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+              if: ${{github.event_name == 'push' && github.ref == 'refs/heads/main'}}
               uses: aws-actions/amazon-ecr-login@v2
             - name: push ecr
-              if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+              if: ${{github.event_name == 'push' && github.ref == 'refs/heads/main'}}
               run: |
                 docker push ${{env.ECR_REGISTRY}}/${{env.ECR_REPO}}:${{ env.IMG_TAG }}
                 docker push ${{env.ECR_REGISTRY}}/${{env.ECR_REPO}}:latest
