@@ -2,6 +2,10 @@ Need to use ubuntu-latest for Production grade CI (slim doesn't have docker deam
 Stop sonarQube auto anlysis in project to avoid conflicts
 Hadolint detects any missing spaces too CMD['npm'] != CMD ['npm']
 
+To find your gihub userid and repoid?
+gh api users/Kajjayamsriram --jq .id
+gh api repos/Kajjayamsriram/pnxt-devsecops-gha --jq .id
+
 Create role for oidc using cli for better customization,
 aws iam create-role --role-name gha-push-image --assume-role-policy-document file://trust.policy
 aws iam attach-role-policy  --role-name gha-push-image  --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser

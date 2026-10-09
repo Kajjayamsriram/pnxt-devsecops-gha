@@ -14,12 +14,12 @@ jobs:
         env:
             REGION: us-east-1
         steps:
-            # - name: aws login
-            #   uses: aws-actions/configure-aws-credentials@v6.2.3
-            #   with:
-            #     audience: sts.amazonaws.com
-            #     aws-region: ${{env.REGION}}
-            #     role-to-assume: arn:aws:iam::967848863323:role/gha-push-image
+            - name: aws login
+              uses: aws-actions/configure-aws-credentials@v6.2.3
+              with:
+                audience: sts.amazonaws.com
+                aws-region: ${{env.REGION}}
+                role-to-assume: arn:aws:iam::967848863323:role/gha-push-image
             - name: Show OIDC claims
               run: |
                 TOKEN=$(curl -sH "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
