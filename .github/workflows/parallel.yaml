@@ -26,6 +26,7 @@ jobs:
             - name: secret-expose test
               run: |
                 echo 'aws_key = "AKIAJ5K3M7QWERTY2ABC"' > test.txt
+                echo 'aws_keys = "AKIAJ5K3M7QWERTY2ABC"' > test.txt
             - name: setup buildx
               uses: docker/setup-buildx-action@v3
             - name: build image
