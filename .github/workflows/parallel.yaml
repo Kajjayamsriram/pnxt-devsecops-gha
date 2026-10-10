@@ -24,9 +24,7 @@ jobs:
             - name: checkout
               uses: actions/checkout@v7
             - name: secret
-              run: |
-                access_key="kjblpasn0979"
-                secrets_key="8606jclksn0"
+              run: echo "removed secrets"
             - name: setup buildx
               uses: docker/setup-buildx-action@v3
             - name: build image

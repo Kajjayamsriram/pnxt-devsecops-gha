@@ -1,5 +1,6 @@
 #Install pre-commit
 pip install pre-commit
+pre-commit install --hook-type pre-commit --hook-type pre-push
 
 #Test hook locally with hook-id before push
 pre-commit run gitleaks --all-files
