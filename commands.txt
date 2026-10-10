@@ -1,0 +1,5 @@
+#Install pre-commit
+pip install pre-commit
+
+#Test hook locally with hook-id before push
+pre-commit run gitleaks --all-files
