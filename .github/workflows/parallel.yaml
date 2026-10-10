@@ -23,10 +23,10 @@ jobs:
         steps:
             - name: checkout
               uses: actions/checkout@v7
-            - name: secret
+            - name: secret-expose test
               run: |
-                access_keys="98698kjblbasclh"
-                secret_keys="oihasflnlascl98"
+                echo "ACCESS_KEYS=AKIAIOSFODNN7EXAMPLE" >> $GITHUB_ENV
+                echo "AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY" >> $GITHUB_ENV
             - name: setup buildx
               uses: docker/setup-buildx-action@v3
             - name: build image
