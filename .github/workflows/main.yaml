@@ -12,7 +12,7 @@ on:
     pull_request:
         types: [opened, synchronize, ready_for_review]
         branches:
-            - main
+            - qa #main
 
     workflow_dispatch:
         inputs:

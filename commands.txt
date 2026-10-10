@@ -4,3 +4,11 @@ pre-commit install --hook-type pre-commit --hook-type pre-push
 
 #Test hook locally with hook-id before push
 pre-commit run gitleaks --all-files
+
+#Troubleshoot hooks!
+ pre-commit clean
+ pre-commit autoupdate
+ pre-commit run gitleaks --all-files --verbose
+ 
+#Bypass pre-hook still the github fails to push code
+git commit --no-verify -m "test commit"
