@@ -1,11 +1,11 @@
-FROM node:22-alpine AS build
+FROM node:25-alpine AS build
 
 WORKDIR /nodejs
 COPY package*.json ./   
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --omit=dev
 
-FROM node:22-alpine
+FROM node:25-alpine
 
 WORKDIR /nodeapp
 COPY --from=build --chown=node:node /nodejs/node_modules ./node_modules
